@@ -556,11 +556,10 @@ class EnhancedDataViewer:
         """Setup menu bar with theme toggle"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
-        
-        # File menu
+          # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Load Subject Data", command=self.load_subject_data)
+        file_menu.add_command(label="Load Subject Data", command=self.load_subject)
         file_menu.add_separator()
         file_menu.add_command(label="Export Data", command=self.export_data)
         file_menu.add_command(label="Export Plot", command=self.export_plot)
@@ -617,13 +616,12 @@ class EnhancedDataViewer:
         
         # Apply theme to all widgets
         self.theme_manager.apply_theme_recursive(self.root)
-        
-        # Update matplotlib plots with theme colors
+          # Update matplotlib plots with theme colors
         self.update_plot_theme()
     
     def update_plot_theme(self):
         """Update matplotlib plots to match theme"""
-        if hasattr(self, 'ax') and self.ax:
+        if hasattr(self, 'figure') and self.figure and hasattr(self, 'ax') and self.ax:
             theme = self.theme_manager.get_theme()
             
             # Set plot background colors
@@ -648,7 +646,8 @@ class EnhancedDataViewer:
                     text.set_color(theme["fg"])
             
             # Refresh canvas
-            self.canvas.draw()
+            if hasattr(self, 'canvas') and self.canvas:
+                self.canvas.draw()
     
     def refresh_subjects(self):
         """Refresh available subjects list"""
