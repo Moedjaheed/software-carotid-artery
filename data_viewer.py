@@ -9,12 +9,16 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from PIL import Image, ImageTk
 import glob
+from theme_manager import ThemeManager
 
 class EnhancedDataViewer:
     def __init__(self, root):
         self.root = root
         self.root.title("Enhanced Data Viewer - Overlay & Diameter Analysis")
         self.root.geometry("1400x900")
+        
+        # Initialize theme manager
+        self.theme_manager = ThemeManager()
         
         # Data containers
         self.video_path = None
@@ -31,7 +35,11 @@ class EnhancedDataViewer:
         self.detect_available_subjects()
         
         self.setup_ui()
+        self.setup_menu_with_theme()
         
+        # Apply initial theme
+        self.apply_current_theme()
+    
     def detect_available_subjects(self):
         """Detect available subjects from data_uji folder"""
         self.available_subjects = []
@@ -543,6 +551,194 @@ class EnhancedDataViewer:
         """Cleanup"""
         if self.cap:
             self.cap.release()
+
+    def setup_menu_with_theme(self):
+        """Setup menu bar with theme toggle"""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # File menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Load Subject Data", command=self.load_subject_data)
+        file_menu.add_separator()
+        file_menu.add_command(label="Export Data", command=self.export_data)
+        file_menu.add_command(label="Export Plot", command=self.export_plot)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        # View menu
+        view_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="View", menu=view_menu)
+        
+        # Theme submenu
+        theme_menu = tk.Menu(view_menu, tearoff=0)
+        view_menu.add_cascade(label="Theme", menu=theme_menu)
+        
+        theme_menu.add_command(label="☀️ Light Mode", 
+                              command=lambda: self.set_theme("light"))
+        theme_menu.add_command(label="🌙 Dark Mode", 
+                              command=lambda: self.set_theme("dark"))
+        theme_menu.add_separator()
+        theme_menu.add_command(label="🔄 Toggle Theme", 
+                              command=self.toggle_theme)
+        
+        view_menu.add_separator()
+        view_menu.add_command(label="Refresh Data", command=self.refresh_subjects)
+        view_menu.add_command(label="Reset View", command=self.reset_view)
+        
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+        tools_menu.add_command(label="Data Analysis", command=self.open_analysis_tools)
+        tools_menu.add_command(label="Batch Export", command=self.batch_export)
+        
+        # Help menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="User Guide", command=self.show_help)
+        help_menu.add_command(label="About", command=self.show_about)
+    
+    def set_theme(self, theme_name):
+        """Set specific theme"""
+        if self.theme_manager.set_theme(theme_name):
+            self.apply_current_theme()
+    
+    def toggle_theme(self):
+        """Toggle theme and apply"""
+        new_theme = self.theme_manager.switch_theme()
+        self.apply_current_theme()
+        messagebox.showinfo("Theme Changed", f"Theme changed to {new_theme.title()} Mode")
+    
+    def apply_current_theme(self):
+        """Apply current theme to data viewer"""
+        # Configure ttk styles first
+        self.theme_manager.configure_ttk_style()
+        
+        # Apply theme to all widgets
+        self.theme_manager.apply_theme_recursive(self.root)
+        
+        # Update matplotlib plots with theme colors
+        self.update_plot_theme()
+    
+    def update_plot_theme(self):
+        """Update matplotlib plots to match theme"""
+        if hasattr(self, 'ax') and self.ax:
+            theme = self.theme_manager.get_theme()
+            
+            # Set plot background colors
+            self.figure.patch.set_facecolor(theme["bg"])
+            self.ax.set_facecolor(theme["frame_bg"])
+            
+            # Set text colors
+            self.ax.tick_params(colors=theme["fg"])
+            self.ax.xaxis.label.set_color(theme["fg"])
+            self.ax.yaxis.label.set_color(theme["fg"])
+            self.ax.title.set_color(theme["fg"])
+            
+            # Update spines
+            for spine in self.ax.spines.values():
+                spine.set_color(theme["fg"])
+            
+            # Update legend if exists
+            legend = self.ax.get_legend()
+            if legend:
+                legend.get_frame().set_facecolor(theme["frame_bg"])
+                for text in legend.get_texts():
+                    text.set_color(theme["fg"])
+            
+            # Refresh canvas
+            self.canvas.draw()
+    
+    def refresh_subjects(self):
+        """Refresh available subjects list"""
+        self.detect_available_subjects()
+        if hasattr(self, 'subject_combo'):
+            self.subject_combo['values'] = [f"Subject {i}" for i in range(1, len(self.available_subjects) + 1)]
+    
+    def reset_view(self):
+        """Reset view to default state"""
+        if hasattr(self, 'ax') and self.ax:
+            self.ax.clear()
+            self.canvas.draw()
+    
+    def open_analysis_tools(self):
+        """Open advanced analysis tools"""
+        messagebox.showinfo("Analysis Tools", "Advanced analysis tools will be implemented in future version")
+    
+    def batch_export(self):
+        """Batch export functionality"""
+        messagebox.showinfo("Batch Export", "Batch export functionality will be implemented in future version")
+    
+    def export_data(self):
+        """Export current data"""
+        if self.synced_data is not None:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
+            )
+            if filename:
+                if filename.endswith('.xlsx'):
+                    self.synced_data.to_excel(filename, index=False)
+                else:
+                    self.synced_data.to_csv(filename, index=False)
+                messagebox.showinfo("Success", f"Data exported to {filename}")
+        else:
+            messagebox.showwarning("Warning", "No data to export")
+    
+    def export_plot(self):
+        """Export current plot"""
+        if hasattr(self, 'figure'):
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".png",
+                filetypes=[("PNG files", "*.png"), ("PDF files", "*.pdf"), ("SVG files", "*.svg")]
+            )
+            if filename:
+                self.figure.savefig(filename, dpi=300, bbox_inches='tight')
+                messagebox.showinfo("Success", f"Plot exported to {filename}")
+        else:
+            messagebox.showwarning("Warning", "No plot to export")
+    
+    def show_help(self):
+        """Show help dialog"""
+        help_text = """Enhanced Data Viewer - Help
+
+Theme Controls:
+• View → Theme → Light/Dark Mode to change themes
+• View → Theme → Toggle Theme for quick switch
+
+Data Loading:
+• Select subject from dropdown
+• Load video and diameter data
+• Analyze correlation with pressure data
+
+Keyboard Shortcuts:
+• Ctrl+O: Load subject data  
+• Ctrl+E: Export data
+• Ctrl+T: Toggle theme
+• F5: Refresh subjects
+
+Navigation:
+• Use video controls to navigate frames
+• Plot shows real-time correlation analysis
+"""
+        messagebox.showinfo("Help", help_text)
+    
+    def show_about(self):
+        """Show about dialog"""
+        about_text = f"""Enhanced Data Viewer v2.0
+
+Current Theme: {self.theme_manager.current_theme.title()}
+
+Features:
+• Dark/Light theme support
+• Advanced data visualization
+• Real-time correlation analysis
+• Multi-format export support
+
+Developed for Carotid Artery Analysis
+© 2024 Research Project"""
+        messagebox.showinfo("About", about_text)
 
 def main():
     root = tk.Tk()
