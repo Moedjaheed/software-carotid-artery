@@ -1,0 +1,149 @@
+# Carotid Segmentation Project - .gitignore
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.spyderproject
+.spyproject
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+*_backup*
+*_old*
+*.orig
+
+# Log files
+*.log
+*.out
+logs/
+
+# Temporary files
+temp/
+tmp/
+temporary/
+.tmp/
+
+# Model checkpoints (keep main models, ignore temporary)
+*.pth.tmp
+*.ckpt.tmp
+checkpoints/
+
+# Test files and development artifacts
+test_*.py
+*_test.py
+quick_*.py
+final_*.py
+debug_*.py
+*_debug.py
+
+# Documentation backup
+*_BACKUP*.md
+*_OLD*.md
+PEMBERSIHAN_*.md
+IMPLEMENTASI_*.md
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyTorch
+*.pth.tar
+
+# Tensorboard
+runs/
+
+# pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Environments
+.env
+.venv
+
+# Data directories - EXCLUDE ALL DATA FROM REPOSITORY
+data_uji/
+inference_results/
+results/
+
+# Keep only directory structure documentation
+!data_uji/.gitkeep
+!inference_results/.gitkeep
+!results/.gitkeep
+!results/csv_data/.gitkeep
+!results/plots/.gitkeep
+!results/synced_data/.gitkeep
+!results/videos/.gitkeep
+
+# Model files - exclude large model files
+*.pth
+*.pt
+*.pkl
+*.h5
+*.hdf5
+*.model
+
+# Keep only model documentation
+!models/.gitkeep
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
